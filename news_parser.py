@@ -16,7 +16,11 @@ class HeadlineList():
         self.headlines = headline_list
 
     def __str__(self) -> str:
-        return "".join([f"- {headline}\n" for headline in self.headlines]).rstrip('/n')
+        text = "".join(
+            [f"- {headline}\n" for headline in self.headlines]).rstrip('/n')
+        if not text:
+            text = "No results. "
+        return text
 
     def __repr__(self) -> str:
         return self.__str__
@@ -45,7 +49,15 @@ class news():
             url_base = "https://" + url_base
         self.URL_BASE = url_base
         self.URL = self.URL_BASE  # this can be overwritten with self.set_section()
-        self.section_filter = ["world", "europe", "business"] if filtering else []
+        self.set_filtering(filtering)
+        self.set_filters()
+
+    def set_filtering(self, filtering: bool) -> None:
+        self.filtering = filtering
+
+    def set_filters(self, filter_list: list[str] = []) -> None:
+        default_filters = ["world", "europe", "business"]
+        self.section_filter = filter_list if filter_list else default_filters
 
     @property
     def page(self) -> requests.Response:
@@ -78,10 +90,10 @@ class news():
     @property
     def headline_dict(self) -> HeadlineDict:
         headline_dict = {}
-        
+
         self.set_section("")  # homepage
         headline_dict.update({"homepage": self.get_headlines()})
-        
+
         for section in self.section_list:
             self.set_section(section)
             if not self.section_filter or self.section in self.section_filter:
